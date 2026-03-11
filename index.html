@@ -1,12 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
-<title>Мій сайт</title>
+<meta charset="UTF-8">
+<title>Перевірка</title>
+<style>
+body{
+font-family: Arial;
+text-align:center;
+margin-top:100px;
+background:#f5f5f5;
+}
+
+input{
+padding:12px;
+width:300px;
+font-size:18px;
+}
+
+button{
+padding:12px 30px;
+font-size:18px;
+margin-top:10px;
+background:#0b5ed7;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+#result{
+margin-top:20px;
+font-size:22px;
+font-weight:bold;
+}
+</style>
 </head>
 
-<body style="text-align:center;font-family:Arial;">
-<h1>Мій перший сайт</h1>
-<p>Сайт працює 🚀</p>
-</body>
+<body>
 
+<h1>Система перевірки</h1>
+
+<input id="name" placeholder="Введіть ім'я">
+
+<br><br>
+
+<button onclick="check()">Перевірити</button>
+
+<div id="result"></div>
+
+<script>
+function check(){
+let name=document.getElementById("name").value;
+
+if(name===""){
+document.getElementById("result").innerHTML="Введіть ім'я";
+}
+else{
+document.getElementById("result").innerHTML="Не в розшуку ✅";
+}
+}
+</script>
+
+</body>
 </html>
