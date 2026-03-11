@@ -3,111 +3,88 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>УХИЛЯНТИ-СЗЧ</title>
+<title>Перевірка реєстрів</title>
 
-<style>державних реєстрів України.
+<style>
 
 body{
+font-family: Arial;
+background:#f2f2f2;
 margin:0;
-font-family:Arial;
-background:#f2f4f7;
 }
 
 .header{
-background:#1b5e20;
+background:#2e5b2e;
 color:white;
 text-align:center;
-padding:25px;
+padding:20px;
 }
 
-.header h1{
-margin:0;
-font-size:28px;
-letter-spacing:2px;
-}
-
-.header p{
-margin-top:5px;
-font-size:14px;
-opacity:0.9;
+.header img{
+width:80px;
+display:block;
+margin:0 auto 10px;
 }
 
 .box{
 background:white;
-padding:25px;
-max-width:500px;
+width:350px;
 margin:40px auto;
+padding:20px;
 border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.15);
+box-shadow:0 0 10px rgba(0,0,0,0.2);
 text-align:center;
 }
 
 input{
-width:100%;
-padding:12px;
-margin-top:10px;
+width:90%;
+padding:10px;
+margin-bottom:10px;
 font-size:16px;
-border-radius:6px;
-border:1px solid #ccc;
 }
 
 button{
-width:100%;
-padding:12px;
-margin-top:10px;
+width:95%;
+padding:10px;
+margin:5px;
 font-size:16px;
-border:none;
-border-radius:6px;
 cursor:pointer;
 }
 
 .check{
-background:#0b3d6e;
+background:#2d4a7c;
 color:white;
+border:none;
 }
 
 .clear{
 background:#ccc;
-}
-
-#loading{
-display:none;
-margin-top:15px;
-}
-
-#result{
-margin-top:15px;
-font-size:20px;
-font-weight:bold;
-}
-
-.history{
-max-width:600px;
-margin:30px auto;
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
-}
-
-.history h3{
-margin-top:0;
-}
-
-.row{
-padding:10px;
-margin-top:5px;
-border-radius:6px;
+border:none;
 }
 
 .green{
 background:#e8f5e9;
 color:#2e7d32;
+padding:10px;
+margin-top:10px;
+border-radius:6px;
 }
 
 .red{
 background:#ffebee;
 color:#c62828;
+padding:10px;
+margin-top:10px;
+border-radius:6px;
+}
+
+.history{
+width:350px;
+margin:20px auto;
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
 
 </style>
@@ -116,8 +93,12 @@ color:#c62828;
 <body>
 
 <div class="header">
-<h1> gerb.png РОЗШУК УХИЛЯНТИ-СЗЧ</h1>
-<p>державних реєстрів України.</p>
+
+<img src="gerb.png">
+
+<h1>РОЗШУК УХИЛЯНТИ-СЗЧ</h1>
+<p>система перевірки державних реєстрів України</p>
+
 </div>
 
 <div class="box">
@@ -127,7 +108,7 @@ color:#c62828;
 <button class="check" onclick="check()">Перевірити</button>
 <button class="clear" onclick="clearData()">Очистити</button>
 
-<div id="loading">⏳ Перевірка...</div>
+<div id="loading" style="display:none;">⏳ Перевірка реєстрів України...</div>
 
 <div id="result"></div>
 
@@ -136,7 +117,6 @@ color:#c62828;
 <div class="history">
 
 <h3>Історія перевірок</h3>
-
 <div id="historyList"></div>
 
 </div>
@@ -159,37 +139,31 @@ setTimeout(function(){
 
 document.getElementById("loading").style.display="none";
 
-let random=Math.random();
+let found=Math.random()>0.5;
 
-let status;
-let color;
+let resultText="";
+let className="";
 
-if(random>0.5){
-status="✅ НЕ В РОЗШУКУ";
-color="green";
+if(found){
+resultText="⛔В РОЗШУКУ";
+className="red";
 }else{
-status=" ⛔ В РОЗШУКУ";
-color="red";
+resultText="✅ НЕ В РОЗШУКУ";
+className="green";
 }
 
-document.getElementById("result").innerHTML=status;
+document.getElementById("result").innerHTML="<div class='"+className+"'>"+resultText+"</div>";
 
-let row=document.createElement("div");
-row.className="row "+color;
-row.innerText=name+" — "+status;
+let history=document.getElementById("historyList");
+history.innerHTML="<div class='"+className+"'>"+name+" — "+resultText+"</div>"+history.innerHTML;
 
-document.getElementById("historyList").prepend(row);
-
-},4000);
+},3000);
 
 }
 
 function clearData(){
-
 document.getElementById("name").value="";
 document.getElementById("result").innerHTML="";
-document.getElementById("loading").style.display="none";
-
 }
 
 </script>
