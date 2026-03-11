@@ -14,20 +14,30 @@ background:#f2f4f7;
 }
 
 .header{
-background:#2e7d32;
+background:#1b5e20;
 color:white;
-padding:20px;
 text-align:center;
-font-size:22px;
-font-weight:bold;
+padding:25px;
+}
+
+.header h1{
+margin:0;
+font-size:28px;
+letter-spacing:2px;
+}
+
+.header p{
+margin-top:5px;
+font-size:14px;
+opacity:0.9;
 }
 
 .box{
 background:white;
-padding:30px;
+padding:25px;
+max-width:500px;
+margin:40px auto;
 border-radius:10px;
-max-width:450px;
-margin:60px auto;
 box-shadow:0 0 10px rgba(0,0,0,0.15);
 text-align:center;
 }
@@ -35,7 +45,7 @@ text-align:center;
 input{
 width:100%;
 padding:12px;
-margin-top:15px;
+margin-top:10px;
 font-size:16px;
 border-radius:6px;
 border:1px solid #ccc;
@@ -62,14 +72,42 @@ background:#ccc;
 
 #loading{
 display:none;
-margin-top:20px;
-font-size:16px;
+margin-top:15px;
 }
 
 #result{
-margin-top:20px;
+margin-top:15px;
 font-size:20px;
 font-weight:bold;
+}
+
+.history{
+max-width:600px;
+margin:30px auto;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+.history h3{
+margin-top:0;
+}
+
+.row{
+padding:10px;
+margin-top:5px;
+border-radius:6px;
+}
+
+.green{
+background:#e8f5e9;
+color:#2e7d32;
+}
+
+.red{
+background:#ffebee;
+color:#c62828;
 }
 
 </style>
@@ -78,21 +116,28 @@ font-weight:bold;
 <body>
 
 <div class="header">
-Система перевірки
+<h1>ПЕРЕВІРКА СТАТУСУ</h1>
+<p>система перевірки записів</p>
 </div>
 
 <div class="box">
-
-<p>Введіть ПІБ для перевірки</p>
 
 <input id="name" placeholder="Введіть ПІБ">
 
 <button class="check" onclick="check()">Перевірити</button>
 <button class="clear" onclick="clearData()">Очистити</button>
 
-<div id="loading">⏳ Перевірка... зачекайте</div>
+<div id="loading">⏳ Перевірка...</div>
 
 <div id="result"></div>
+
+</div>
+
+<div class="history">
+
+<h3>Історія перевірок</h3>
+
+<div id="historyList"></div>
 
 </div>
 
@@ -116,13 +161,26 @@ document.getElementById("loading").style.display="none";
 
 let random=Math.random();
 
+let status;
+let color;
+
 if(random>0.5){
-document.getElementById("result").innerHTML="<span style='color:green'>🟢 НЕ В БАЗІ</span>";
+status="✅ НЕ В РОЗШУКУ";
+color="green";
 }else{
-document.getElementById("result").innerHTML="<span style='color:red'>🔴 Є ЗБІГ У БАЗІ</span>";
+status="⭕➖ В РОЗШУКУ";
+color="red";
 }
 
-},10000);
+document.getElementById("result").innerHTML=status;
+
+let row=document.createElement("div");
+row.className="row "+color;
+row.innerText=name+" — "+status;
+
+document.getElementById("historyList").prepend(row);
+
+},4000);
 
 }
 
