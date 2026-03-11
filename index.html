@@ -2,63 +2,118 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Перевірка</title>
+<title>Система перевірки</title>
+
 <style>
 body{
 font-family: Arial;
+background:#f3f6f9;
 text-align:center;
-margin-top:100px;
-background:#f5f5f5;
+padding:40px;
+}
+
+.box{
+background:white;
+padding:30px;
+border-radius:10px;
+max-width:500px;
+margin:auto;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
 
 input{
+width:100%;
 padding:12px;
-width:300px;
-font-size:18px;
+font-size:16px;
+margin-top:15px;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
 button{
-padding:12px 30px;
-font-size:18px;
+width:100%;
+padding:12px;
 margin-top:10px;
-background:#0b5ed7;
-color:white;
+font-size:16px;
 border:none;
 border-radius:6px;
 cursor:pointer;
 }
 
+.check{
+background:#0b3d6e;
+color:white;
+}
+
+.clear{
+background:#ccc;
+}
+
+#loading{
+display:none;
+margin-top:20px;
+}
+
 #result{
 margin-top:20px;
-font-size:22px;
-font-weight:bold;
+font-size:18px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Система перевірки</h1>
+<div class="box">
 
-<input id="name" placeholder="Введіть ім'я">
+<h2>Система перевірки</h2>
+<p>Введіть ПІБ для перевірки</p>
 
-<br><br>
+<input id="name" placeholder="Введіть ПІБ">
 
-<button onclick="check()">Перевірити</button>
+<button class="check" onclick="check()">Перевірити</button>
+<button class="clear" onclick="clearData()">Очистити</button>
 
+<div id="loading">⏳ Перевірка... зачекайте</div>
 <div id="result"></div>
 
+</div>
+
 <script>
+
 function check(){
+
 let name=document.getElementById("name").value;
 
-if(name===""){
-document.getElementById("result").innerHTML="Введіть ім'я";
+if(name==""){
+alert("Введіть ПІБ");
+return;
 }
-else{
-document.getElementById("result").innerHTML="Не в розшуку ✅";
+
+document.getElementById("loading").style.display="block";
+document.getElementById("result").innerHTML="";
+
+setTimeout(function(){
+
+document.getElementById("loading").style.display="none";
+
+let random=Math.random();
+
+if(random>0.5){
+document.getElementById("result").innerHTML="✅ Записів не знайдено";
+}else{
+document.getElementById("result").innerHTML="⚠️ Є збіг у тестовій базі";
 }
+
+},10000);
+
 }
+
+function clearData(){
+document.getElementById("name").value="";
+document.getElementById("result").innerHTML="";
+document.getElementById("loading").style.display="none";
+}
+
 </script>
 
 </body>
