@@ -2,182 +2,110 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Ice Fishing Clone</title>
+<title>🔮 Magic Prediction</title>
 
 <style>
 body {
     margin: 0;
-    font-family: Arial;
-    background: linear-gradient(#0b1f2a, #123b4a);
+    background: radial-gradient(circle, #020024, #090979, #000);
     color: white;
+    font-family: Arial;
     text-align: center;
 }
 
 h1 {
-    margin-top: 10px;
-}
-
-#wheel-container {
-    position: relative;
-    width: 350px;
-    height: 350px;
-    margin: 20px auto;
-}
-
-#wheel {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 8px solid #ccc;
-    transition: transform 4s cubic-bezier(.17,.67,.83,.67);
-}
-
-.pointer {
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 30px;
-}
-
-.controls {
     margin-top: 20px;
 }
 
-.bet-btn {
-    padding: 10px 20px;
-    margin: 5px;
-    border-radius: 10px;
+.ball {
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle at 30% 30%, #444, #000);
+    border-radius: 50%;
+    margin: 40px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(0,0,0,0.8);
+    transition: 0.5s;
+}
+
+button {
+    padding: 15px 25px;
+    margin: 10px;
     border: none;
+    border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
 }
 
-.blue { background: #3498db; }
-.orange { background: #e67e22; }
-.red { background: #e74c3c; }
-
-#result {
-    margin-top: 20px;
-    font-size: 22px;
+.gift {
+    background: gold;
+    color: black;
 }
 
-.balance {
-    margin-top: 10px;
+#status {
+    margin-top: 15px;
     font-size: 18px;
 }
 </style>
-</head>
 
+</head>
 <body>
 
-<h1>🎣 ICE FISHING</h1>
+<h1>🔮 Шар передбачення</h1>
 
-<div id="wheel-container">
-    <div class="pointer">▼</div>
-    <canvas id="wheel" width="350" height="350"></canvas>
+<div class="ball" id="ball">
+    Натисни подарунок 🎁
 </div>
 
-<div class="controls">
-    <button class="bet-btn blue" onclick="setBet('blue')">LIL BLUES (x2-10)</button>
-    <button class="bet-btn orange" onclick="setBet('orange')">BIG ORANGES (x5-20)</button>
-    <button class="bet-btn red" onclick="setBet('red')">HUGE REDS (x10-50)</button>
-</div>
+<button class="gift" onclick="gift()">🎁 Надіслати подарунок</button>
 
-<br>
-<button onclick="spin()">🎯 Крутити</button>
-
-<div id="result"></div>
-<div class="balance">Баланс: <span id="balance">100</span> ₴</div>
+<div id="status"></div>
 
 <script>
-const canvas = document.getElementById("wheel");
-const ctx = canvas.getContext("2d");
 
-const sectors = [
-    {color:"#3498db", label:"LIL"},
-    {color:"#e67e22", label:"BIG"},
-    {color:"#e74c3c", label:"HUGE"},
-    {color:"#3498db", label:"LIL"},
-    {color:"#e67e22", label:"BIG"},
-    {color:"#e74c3c", label:"HUGE"}
+const normalPredictions = [
+    "😐 Поки що нічого не зміниться",
+    "⏳ Треба почекати",
+    "🤔 Не все так просто",
+    "😶 Сумнівно",
+    "📉 Сьогодні не твій день"
 ];
 
-let currentAngle = 0;
-let selectedBet = "blue";
-let balance = 100;
+const goodPredictions = [
+    "💰 Скоро гроші",
+    "🔥 Великий успіх",
+    "❤️ Любов вже близько",
+    "🚀 Різкий підйом",
+    "💎 Ти зірвеш куш"
+];
 
-function drawWheel() {
-    const arc = Math.PI * 2 / sectors.length;
+const crazyPredictions = [
+    "😈 Хтось заздрить тобі",
+    "👀 За тобою дивляться",
+    "⚠️ Буде жорстка ситуація",
+    "💥 Скоро щось вибухне (образно 😅)",
+    "🕵️ Таємниця скоро відкриється"
+];
 
-    sectors.forEach((s, i) => {
-        ctx.beginPath();
-        ctx.moveTo(175, 175);
-        ctx.arc(175, 175, 175, arc*i, arc*(i+1));
-        ctx.fillStyle = s.color;
-        ctx.fill();
+function gift(){
 
-        ctx.save();
-        ctx.translate(175,175);
-        ctx.rotate(arc*i + arc/2);
-        ctx.fillStyle = "#fff";
-        ctx.fillText(s.label, 80, 10);
-        ctx.restore();
-    });
-}
+    let ball = document.getElementById("ball");
+    let status = document.getElementById("status");
 
-drawWheel();
-
-function setBet(type) {
-    selectedBet = type;
-}
-
-function getMultiplier(type) {
-    if(type === "blue") return Math.floor(Math.random()*8)+2;
-    if(type === "orange") return Math.floor(Math.random()*15)+5;
-    if(type === "red") return Math.floor(Math.random()*40)+10;
-}
-
-function spin() {
-
-    if(balance < 10){
-        alert("Недостатній баланс");
-        return;
-    }
-
-    balance -= 10;
-
-    let index = Math.floor(Math.random()*sectors.length);
-    let sector = sectors[index];
-
-    let angle = 360 * 5 + (index * (360/sectors.length));
-    currentAngle += angle;
-
-    canvas.style.transform = `rotate(${currentAngle}deg)`;
+    ball.innerText = "⏳ Думаю...";
+    ball.style.transform = "scale(1.1)";
 
     setTimeout(()=>{
 
-        let winType =
-            sector.color === "#3498db" ? "blue" :
-            sector.color === "#e67e22" ? "orange" : "red";
+        let rand = Math.random();
+        let text;
 
-        if(winType === selectedBet){
-            let multi = getMultiplier(winType);
-            let win = 10 * multi;
-            balance += win;
-
-            document.getElementById("result").innerText =
-                `🔥 ВИГРАШ x${multi} = ${win}₴`;
-        } else {
-            document.getElementById("result").innerText =
-                "❌ ПРОГРАВ";
-        }
-
-        document.getElementById("balance").innerText = balance;
-
-    }, 4000);
-}
-</script>
-
-</body>
-</html>
+        // шанс під подарунок (підкручений)
+        if(rand < 0.6){
+            text = goodPredictions[Math.floor(Math.random()*goodPredictions.length)];
+        } else if(rand <
