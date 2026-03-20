@@ -2,97 +2,170 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Рулетка</title>
+<title>Casino Wheel</title>
+
 <style>
-  body {
-    background: #0b1e2d;
-    color: white;
-    text-align: center;
-    font-family: Arial;
-  }
+body {
+  margin: 0;
+  background: #0c1b2a;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+}
 
-  .wheel {
-    margin: 50px auto;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    border: 8px solid white;
-    position: relative;
-    overflow: hidden;
-    transition: transform 4s ease-out;
-  }
+/* колесо */
+.wheel {
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  border: 6px solid #aaa;
+  margin: 30px auto;
+  position: relative;
+  overflow: hidden;
+  transition: transform 4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 
-  .segment {
-    position: absolute;
-    width: 50%;
-    height: 50%;
-    transform-origin: 100% 100%;
-  }
+/* сегменти */
+.segment {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  transform-origin: 100% 100%;
+}
 
-  .blue { background: #3498db; }
-  .orange { background: orange; }
-  .red { background: red; }
+.blue { background: #3498db; }
+.orange { background: #f39c12; }
+.red { background: #e74c3c; }
 
-  button {
-    padding: 15px 30px;
-    font-size: 20px;
-    background: gold;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-  }
+/* стрілка */
+.arrow {
+  width: 0;
+  height: 0;
+  margin: auto;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 25px solid white;
+}
 
-  .arrow {
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-bottom: 30px solid white;
-    margin: auto;
-  }
+/* кнопки */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.bet {
+  padding: 15px;
+  width: 100px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.blueBtn { background: #3498db; }
+.orangeBtn { background: #f39c12; }
+.redBtn { background: #e74c3c; }
+
+.spin {
+  margin-top: 15px;
+  padding: 15px 30px;
+  background: gold;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* текст */
+#result {
+  margin-top: 15px;
+  font-size: 22px;
+}
+
+.players {
+  margin-top: 20px;
+  font-size: 14px;
+  opacity: 0.8;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🎰 Рулетка</h1>
+<h2>🎰 LIVE GAME</h2>
 
 <div class="arrow"></div>
-
 <div id="wheel" class="wheel"></div>
 
-<br>
-<button onclick="spin()">КРУТИТИ</button>
+<div class="controls">
+  <div class="bet blueBtn" onclick="setBet('blue')">🔵 x2</div>
+  <div class="bet orangeBtn" onclick="setBet('orange')">🟠 x5</div>
+  <div class="bet redBtn" onclick="setBet('red')">🔴 x10</div>
+</div>
 
-<h2 id="result"></h2>
+<button class="spin" onclick="spin()">КРУТИТИ</button>
+
+<div id="result"></div>
+
+<div class="players" id="players"></div>
 
 <script>
 const wheel = document.getElementById("wheel");
 
-// створюємо сегменти
-const colors = ["blue","orange","red","blue","orange","red"];
-const prizes = ["0 грн","10 грн","100 грн","0 грн","20 грн","200 грн"];
+const segments = [
+  "blue","orange","blue","red",
+  "blue","orange","blue","red"
+];
 
-for (let i = 0; i < 6; i++) {
-  let segment = document.createElement("div");
-  segment.className = "segment " + colors[i];
-  segment.style.transform = `rotate(${i * 60}deg) skewY(-30deg)`;
-  wheel.appendChild(segment);
+for (let i = 0; i < segments.length; i++) {
+  let s = document.createElement("div");
+  s.className = "segment " + segments[i];
+  s.style.transform = `rotate(${i * (360/segments.length)}deg) skewY(-45deg)`;
+  wheel.appendChild(s);
 }
 
 let rotation = 0;
+let currentBet = "blue";
 
+// ставки
+function setBet(color) {
+  currentBet = color;
+  document.getElementById("result").innerText = "Ставка: " + color;
+}
+
+// крутка
 function spin() {
   let random = Math.floor(Math.random() * 360) + 720;
   rotation += random;
   wheel.style.transform = `rotate(${rotation}deg)`;
 
-  let index = Math.floor((360 - (rotation % 360)) / 60) % 6;
+  let index = Math.floor((360 - (rotation % 360)) / (360/segments.length)) % segments.length;
+  let result = segments[index];
 
   setTimeout(() => {
-    document.getElementById("result").innerText =
-      "Ти виграв: " + prizes[index];
+    if (result === currentBet) {
+      let win = result === "red" ? "x10" : result === "orange" ? "x5" : "x2";
+      document.getElementById("result").innerText = "🔥 ВИГРАВ " + win;
+    } else {
+      document.getElementById("result").innerText = "❌ ПРОГРАВ";
+    }
+
+    fakePlayers();
   }, 4000);
+}
+
+// фейкові гравці (як у казино)
+function fakePlayers() {
+  let names = ["Roma","Max","Ivan","Alex","Den","TopG","Boss"];
+  let text = "";
+
+  for (let i = 0; i < 5; i++) {
+    let name = names[Math.floor(Math.random()*names.length)];
+    let amount = Math.floor(Math.random()*200);
+    text += name + " виграв " + amount + " грн<br>";
+  }
+
+  document.getElementById("players").innerHTML = text;
 }
 </script>
 
