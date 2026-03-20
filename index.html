@@ -2,167 +2,98 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Перевірка реєстрів</title>
-
+<title>Рулетка</title>
 <style>
+  body {
+    background: #0b1e2d;
+    color: white;
+    text-align: center;
+    font-family: Arial;
+  }
 
-body{
-font-family: Arial;
-background:#f2f2f2;
-margin:0;
-}
+  .wheel {
+    margin: 50px auto;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 8px solid white;
+    position: relative;
+    overflow: hidden;
+    transition: transform 4s ease-out;
+  }
 
-.header{
-background:#2e5b2e;
-color:white;
-text-align:center;
-padding:20px;
-}
+  .segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: 100% 100%;
+  }
 
-.header img{
-width:80px;
-display:block;
-margin:0 auto 10px;
-}
+  .blue { background: #3498db; }
+  .orange { background: orange; }
+  .red { background: red; }
 
-.box{
-background:white;
-width:600px;
-margin:40px auto;
-padding:20px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.2);
-text-align:center;
-}
+  button {
+    padding: 15px 30px;
+    font-size: 20px;
+    background: gold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+  }
 
-input{
-width:90%;
-padding:10px;
-margin-bottom:10px;
-font-size:16px;
-}
-
-button{
-width:95%;
-padding:10px;
-margin:5px;
-font-size:16px;
-cursor:pointer;
-}
-
-.check{
-background:#2d4a7c;
-color:white;
-border:none;
-}
-
-.clear{
-background:#ccc;
-border:none;
-}
-
-.green{
-background:#e8f5e9;
-color:#2e7d32;
-padding:10px;
-margin-top:10px;
-border-radius:6px;
-}
-
-.red{
-background:#ffebee;
-color:#c62828;
-padding:10px;
-margin-top:10px;
-border-radius:6px;
-}
-
-.history{
-width:600px;
-margin:20px auto;
-background:white;
-padding:15px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.2);
-}
-
+  .arrow {
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 30px solid white;
+    margin: auto;
+  }
 </style>
 </head>
 
 <body>
 
-<div class="header">
+<h1>🎰 Рулетка</h1>
 
-<h1>РОЗШУК УХИЛЯНТИ-СЗЧ</h1>
-<p>система перевірки державних реєстрів України</p>
+<div class="arrow"></div>
 
-</div>
+<div id="wheel" class="wheel"></div>
 
-<div class="box">
+<br>
+<button onclick="spin()">КРУТИТИ</button>
 
-<input id="name" placeholder="Введіть ПІБ">
-
-<button class="check" onclick="check()">Перевірити</button>
-<button class="clear" onclick="clearData()">Очистити</button>
-
-<div id="loading" style="display:none;">⏳ Перевірка реєстрів України...</div>
-
-<div id="result"></div>
-
-</div>
-
-<div class="history">
-
-<h3>Історія перевірок</h3>
-<div id="historyList"></div>
-
-</div>
+<h2 id="result"></h2>
 
 <script>
+const wheel = document.getElementById("wheel");
 
-function check(){
+// створюємо сегменти
+const colors = ["blue","orange","red","blue","orange","red"];
+const prizes = ["0 грн","10 грн","100 грн","0 грн","20 грн","200 грн"];
 
-let name=document.getElementById("name").value;
-
-if(name==""){
-alert("Введіть ПІБ");
-return;
+for (let i = 0; i < 6; i++) {
+  let segment = document.createElement("div");
+  segment.className = "segment " + colors[i];
+  segment.style.transform = `rotate(${i * 60}deg) skewY(-30deg)`;
+  wheel.appendChild(segment);
 }
 
-document.getElementById("loading").style.display="block";
-document.getElementById("result").innerHTML="";
+let rotation = 0;
 
-setTimeout(function(){
+function spin() {
+  let random = Math.floor(Math.random() * 360) + 720;
+  rotation += random;
+  wheel.style.transform = `rotate(${rotation}deg)`;
 
-document.getElementById("loading").style.display="none";
+  let index = Math.floor((360 - (rotation % 360)) / 60) % 6;
 
-let found=Math.random()>0.5;
-
-let resultText="";
-let className="";
-
-if(found){
-resultText="⛔ В РОЗШУКУ";
-className="red";
-}else{
-resultText="✅ НЕ В РОЗШУКУ";
-className="green";
+  setTimeout(() => {
+    document.getElementById("result").innerText =
+      "Ти виграв: " + prizes[index];
+  }, 4000);
 }
-
-document.getElementById("result").innerHTML="<div class='"+className+"'>"+resultText+"</div>";
-
-let history=document.getElementById("historyList");
-history.innerHTML="<div class='"+className+"'>"+name+" — "+resultText+"</div>"+history.innerHTML;
-
-},3000);
-
-}
-
-function clearData(){
-document.getElementById("name").value="";
-document.getElementById("result").innerHTML="";
-}
-
 </script>
 
 </body>
