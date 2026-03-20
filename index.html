@@ -2,170 +2,180 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Casino Wheel</title>
+<title>Ice Fishing Clone</title>
 
 <style>
 body {
-  margin: 0;
-  background: #0c1b2a;
-  color: white;
-  font-family: Arial;
-  text-align: center;
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(#0b1f2a, #123b4a);
+    color: white;
+    text-align: center;
 }
 
-/* колесо */
-.wheel {
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  border: 6px solid #aaa;
-  margin: 30px auto;
-  position: relative;
-  overflow: hidden;
-  transition: transform 4s cubic-bezier(0.2, 0.8, 0.2, 1);
+h1 {
+    margin-top: 10px;
 }
 
-/* сегменти */
-.segment {
-  position: absolute;
-  width: 50%;
-  height: 50%;
-  transform-origin: 100% 100%;
+#wheel-container {
+    position: relative;
+    width: 350px;
+    height: 350px;
+    margin: 20px auto;
+}
+
+#wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 8px solid #ccc;
+    transition: transform 4s cubic-bezier(.17,.67,.83,.67);
+}
+
+.pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;
+}
+
+.controls {
+    margin-top: 20px;
+}
+
+.bet-btn {
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .blue { background: #3498db; }
-.orange { background: #f39c12; }
+.orange { background: #e67e22; }
 .red { background: #e74c3c; }
 
-/* стрілка */
-.arrow {
-  width: 0;
-  height: 0;
-  margin: auto;
-  border-left: 15px solid transparent;
-  border-right: 15px solid transparent;
-  border-bottom: 25px solid white;
-}
-
-/* кнопки */
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.bet {
-  padding: 15px;
-  width: 100px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.blueBtn { background: #3498db; }
-.orangeBtn { background: #f39c12; }
-.redBtn { background: #e74c3c; }
-
-.spin {
-  margin-top: 15px;
-  padding: 15px 30px;
-  background: gold;
-  border: none;
-  border-radius: 10px;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-/* текст */
 #result {
-  margin-top: 15px;
-  font-size: 22px;
+    margin-top: 20px;
+    font-size: 22px;
 }
 
-.players {
-  margin-top: 20px;
-  font-size: 14px;
-  opacity: 0.8;
+.balance {
+    margin-top: 10px;
+    font-size: 18px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🎰 LIVE GAME</h2>
+<h1>🎣 ICE FISHING</h1>
 
-<div class="arrow"></div>
-<div id="wheel" class="wheel"></div>
-
-<div class="controls">
-  <div class="bet blueBtn" onclick="setBet('blue')">🔵 x2</div>
-  <div class="bet orangeBtn" onclick="setBet('orange')">🟠 x5</div>
-  <div class="bet redBtn" onclick="setBet('red')">🔴 x10</div>
+<div id="wheel-container">
+    <div class="pointer">▼</div>
+    <canvas id="wheel" width="350" height="350"></canvas>
 </div>
 
-<button class="spin" onclick="spin()">КРУТИТИ</button>
+<div class="controls">
+    <button class="bet-btn blue" onclick="setBet('blue')">LIL BLUES (x2-10)</button>
+    <button class="bet-btn orange" onclick="setBet('orange')">BIG ORANGES (x5-20)</button>
+    <button class="bet-btn red" onclick="setBet('red')">HUGE REDS (x10-50)</button>
+</div>
+
+<br>
+<button onclick="spin()">🎯 Крутити</button>
 
 <div id="result"></div>
-
-<div class="players" id="players"></div>
+<div class="balance">Баланс: <span id="balance">100</span> ₴</div>
 
 <script>
-const wheel = document.getElementById("wheel");
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
 
-const segments = [
-  "blue","orange","blue","red",
-  "blue","orange","blue","red"
+const sectors = [
+    {color:"#3498db", label:"LIL"},
+    {color:"#e67e22", label:"BIG"},
+    {color:"#e74c3c", label:"HUGE"},
+    {color:"#3498db", label:"LIL"},
+    {color:"#e67e22", label:"BIG"},
+    {color:"#e74c3c", label:"HUGE"}
 ];
 
-for (let i = 0; i < segments.length; i++) {
-  let s = document.createElement("div");
-  s.className = "segment " + segments[i];
-  s.style.transform = `rotate(${i * (360/segments.length)}deg) skewY(-45deg)`;
-  wheel.appendChild(s);
+let currentAngle = 0;
+let selectedBet = "blue";
+let balance = 100;
+
+function drawWheel() {
+    const arc = Math.PI * 2 / sectors.length;
+
+    sectors.forEach((s, i) => {
+        ctx.beginPath();
+        ctx.moveTo(175, 175);
+        ctx.arc(175, 175, 175, arc*i, arc*(i+1));
+        ctx.fillStyle = s.color;
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(175,175);
+        ctx.rotate(arc*i + arc/2);
+        ctx.fillStyle = "#fff";
+        ctx.fillText(s.label, 80, 10);
+        ctx.restore();
+    });
 }
 
-let rotation = 0;
-let currentBet = "blue";
+drawWheel();
 
-// ставки
-function setBet(color) {
-  currentBet = color;
-  document.getElementById("result").innerText = "Ставка: " + color;
+function setBet(type) {
+    selectedBet = type;
 }
 
-// крутка
+function getMultiplier(type) {
+    if(type === "blue") return Math.floor(Math.random()*8)+2;
+    if(type === "orange") return Math.floor(Math.random()*15)+5;
+    if(type === "red") return Math.floor(Math.random()*40)+10;
+}
+
 function spin() {
-  let random = Math.floor(Math.random() * 360) + 720;
-  rotation += random;
-  wheel.style.transform = `rotate(${rotation}deg)`;
 
-  let index = Math.floor((360 - (rotation % 360)) / (360/segments.length)) % segments.length;
-  let result = segments[index];
-
-  setTimeout(() => {
-    if (result === currentBet) {
-      let win = result === "red" ? "x10" : result === "orange" ? "x5" : "x2";
-      document.getElementById("result").innerText = "🔥 ВИГРАВ " + win;
-    } else {
-      document.getElementById("result").innerText = "❌ ПРОГРАВ";
+    if(balance < 10){
+        alert("Недостатній баланс");
+        return;
     }
 
-    fakePlayers();
-  }, 4000);
-}
+    balance -= 10;
 
-// фейкові гравці (як у казино)
-function fakePlayers() {
-  let names = ["Roma","Max","Ivan","Alex","Den","TopG","Boss"];
-  let text = "";
+    let index = Math.floor(Math.random()*sectors.length);
+    let sector = sectors[index];
 
-  for (let i = 0; i < 5; i++) {
-    let name = names[Math.floor(Math.random()*names.length)];
-    let amount = Math.floor(Math.random()*200);
-    text += name + " виграв " + amount + " грн<br>";
-  }
+    let angle = 360 * 5 + (index * (360/sectors.length));
+    currentAngle += angle;
 
-  document.getElementById("players").innerHTML = text;
+    canvas.style.transform = `rotate(${currentAngle}deg)`;
+
+    setTimeout(()=>{
+
+        let winType =
+            sector.color === "#3498db" ? "blue" :
+            sector.color === "#e67e22" ? "orange" : "red";
+
+        if(winType === selectedBet){
+            let multi = getMultiplier(winType);
+            let win = 10 * multi;
+            balance += win;
+
+            document.getElementById("result").innerText =
+                `🔥 ВИГРАШ x${multi} = ${win}₴`;
+        } else {
+            document.getElementById("result").innerText =
+                "❌ ПРОГРАВ";
+        }
+
+        document.getElementById("balance").innerText = balance;
+
+    }, 4000);
 }
 </script>
 
