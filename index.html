@@ -1,111 +1,181 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-<meta charset="UTF-8">
-<title>🔮 Magic Prediction</title>
+import random
+import time
+import json
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-<style>
-body {
-    margin: 0;
-    background: radial-gradient(circle, #020024, #090979, #000);
-    color: white;
-    font-family: Arial;
-    text-align: center;
-}
+TOKEN = "ТУТ_ТВОЙ_TOKEN"
+ADMIN_ID = 123456789
 
-h1 {
-    margin-top: 20px;
-}
+DATA_FILE = "data.json"
 
-.ball {
-    width: 250px;
-    height: 250px;
-    background: radial-gradient(circle at 30% 30%, #444, #000);
-    border-radius: 50%;
-    margin: 40px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 0 40px rgba(0,0,0,0.8);
-    transition: 0.5s;
-}
+# 📂 завантаження
+def load_data():
+    try:
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return {}
 
-button {
-    padding: 15px 25px;
-    margin: 10px;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-}
+# 💾 збереження
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
 
-.gift {
-    background: gold;
-    color: black;
-}
+users = load_data()
 
-#status {
-    margin-top: 15px;
-    font-size: 18px;
-}
-</style>
+def get_user(user_id):
+    user_id = str(user_id)
 
-</head>
-<body>
+    if user_id not in users:
+        users[user_id] = {
+            "energy": 10,
+            "coins": 0,
+            "last_update": time.time(),
+            "last_click": 0
+        }
+    return users[user_id]
 
-<h1>🔮 Шар передбачення</h1>
+# 🔋 енергія
+def update_energy(user):
+    now = time.time()
+    diff = now - user["last_update"]
 
-<div class="ball" id="ball">
-    Натисни подарунок 🎁
-</div>
+    regen = int(diff // 300)
 
-<button class="gift" onclick="gift()">🎁 Надіслати подарунок</button>
+    if regen > 0:
+        user["energy"] = min(100, user["energy"] + regen)
+        user["last_update"] = now
 
-<div id="status"></div>
+# 📊 UI
+def get_text(user):
+    progress = int((user["coins"] / 200) * 10)
+    bar = "🟩" * progress + "⬜" * (10 - progress)
 
-<script>
+    return f"""
+🦠 VIRUS TAP
 
-const normalPredictions = [
-    "😐 Поки що нічого не зміниться",
-    "⏳ Треба почекати",
-    "🤔 Не все так просто",
-    "😶 Сумнівно",
-    "📉 Сьогодні не твій день"
-];
+{bar}
 
-const goodPredictions = [
-    "💰 Скоро гроші",
-    "🔥 Великий успіх",
-    "❤️ Любов вже близько",
-    "🚀 Різкий підйом",
-    "💎 Ти зірвеш куш"
-];
+🪙 {user['coins']} / 200
+🔋 {user['energy']} / 100
+"""
 
-const crazyPredictions = [
-    "😈 Хтось заздрить тобі",
-    "👀 За тобою дивляться",
-    "⚠️ Буде жорстка ситуація",
-    "💥 Скоро щось вибухне (образно 😅)",
-    "🕵️ Таємниця скоро відкриється"
-];
+def get_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🧪 ТАП", callback_data="tap")],
+        [InlineKeyboardButton("📦 СУНДУК", callback_data="chest")],
+        [InlineKeyboardButton("🎁 ЕНЕРГІЯ", callback_data="buy")]
+    ])
 
-function gift(){
+# 🚀 старт
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = get_user(update.effective_user.id)
+    await update.message.reply_text(get_text(user), reply_markup=get_keyboard())
 
-    let ball = document.getElementById("ball");
-    let status = document.getElementById("status");
+# 🧪 тап
+async def tap(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user = get_user(query.from_user.id)
 
-    ball.innerText = "⏳ Думаю...";
-    ball.style.transform = "scale(1.1)";
+    update_energy(user)
 
-    setTimeout(()=>{
+    now = time.time()
 
-        let rand = Math.random();
-        let text;
+    if now - user["last_click"] < 1:
+        await query.answer("⏳ Повільніше")
+        return
 
-        // шанс під подарунок (підкручений)
-        if(rand < 0.6){
-            text = goodPredictions[Math.floor(Math.random()*goodPredictions.length)];
-        } else if(rand <
+    user["last_click"] = now
+
+    if user["energy"] > 0:
+        user["energy"] -= 1
+        user["coins"] += 1
+        await query.answer("+1 🪙")
+    else:
+        await query.answer("❌ Немає енергії")
+
+    save_data(users)
+
+    await query.message.edit_text(get_text(user), reply_markup=get_keyboard())
+
+# 📦 сундук
+async def chest(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user = get_user(query.from_user.id)
+
+    update_energy(user)
+
+    if user["energy"] < 100:
+        await query.answer("❌ Треба 100 енергії")
+        return
+
+    user["energy"] = 0
+
+    fake = " → ".join(str(random.choice([5,10,20,50])) for _ in range(5))
+    reward = random.choice([1,2,3,5])
+
+    user["coins"] += reward
+
+    save_data(users)
+
+    await query.message.reply_text(f"""
+📦 ВІДКРИВАЄМО...
+
+💰 {fake}
+
+🎉 ВИПАЛО: {reward} 🪙
+""")
+
+# 🎁 покупка
+async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+
+    keyboard = [
+        [InlineKeyboardButton("✅ Я оплатив", callback_data="paid")]
+    ]
+
+    await query.message.reply_text(
+        "🎁 Відправ подарунок і натисни кнопку",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+pending = {}
+
+# 📩 заявка
+async def paid(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user = query.from_user
+
+    pending[user.id] = True
+
+    await context.bot.send_message(
+        chat_id=ADMIN_ID,
+        text=f"💰 Донат\n@{user.username}\nID: {user.id}"
+    )
+
+    await query.message.reply_text("⏳ Чекаємо підтвердження")
+
+# ⚡ підтвердження
+async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = str(context.args[0])
+
+    if user_id in users:
+        users[user_id]["energy"] += 50
+        save_data(users)
+
+        await context.bot.send_message(
+            chat_id=int(user_id),
+            text="✅ Оплата підтверджена\n⚡ +50 енергії"
+        )
+
+app = ApplicationBuilder().token(TOKEN).build()
+
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("confirm", confirm))
+app.add_handler(CallbackQueryHandler(tap, pattern="tap"))
+app.add_handler(CallbackQueryHandler(chest, pattern="chest"))
+app.add_handler(CallbackQueryHandler(buy, pattern="buy"))
+app.add_handler(CallbackQueryHandler(paid, pattern="paid"))
+
+app.run_polling()
